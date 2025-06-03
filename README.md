@@ -137,22 +137,92 @@ cd vendus-reports
 pip install -e .[dev]
 ```
 
+### Alternative Development Setup
+
+If you prefer using requirements files:
+
+```bash
+pip install -e .
+pip install -r requirements-dev.txt
+```
+
 ### Running Tests
 
 ```bash
+# Run all tests
 pytest
+
+# Run with coverage
+pytest --cov=vendus_reports
+
+# Run specific test file
+pytest tests/test_cli.py
+
+# Run with verbose output
+pytest -v
 ```
 
-### Code Formatting
+### Code Quality
+
+#### Code Formatting
 
 ```bash
-black src/
+# Format code
+black src/ tests/
+
+# Check formatting without applying changes
+black --check src/ tests/
 ```
 
-### Type Checking
+#### Type Checking
 
 ```bash
+# Run type checking
 mypy src/
+
+# Run type checking with verbose output
+mypy --verbose src/
+```
+
+#### Linting
+
+```bash
+# Run flake8 linting
+flake8 src/ tests/
+```
+
+### Pre-commit Hooks
+
+Install pre-commit hooks to automatically run checks before commits:
+
+```bash
+pre-commit install
+pre-commit run --all-files
+```
+
+### Building Distribution
+
+```bash
+# Build source and wheel distributions
+python -m build
+
+# Check distribution
+twine check dist/*
+
+# Upload to PyPI (for maintainers)
+twine upload dist/*
+```
+
+### Testing Different Python Versions
+
+This package supports Python 3.8+. To test across versions:
+
+```bash
+# Using pyenv (install versions first)
+pyenv local 3.8.18 3.9.18 3.10.13 3.11.7 3.12.1
+
+# Using tox (if configured)
+tox
 ```
 
 ## API Requirements

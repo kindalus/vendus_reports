@@ -1,0 +1,1 @@
+"""Tests for vendus_reports package."""
