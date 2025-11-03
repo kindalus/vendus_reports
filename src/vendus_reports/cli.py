@@ -16,6 +16,14 @@ from datetime import datetime
 
 __version__ = "0.1.0"
 
+# Google Drive import (optional - only needed when --archive is used)
+try:
+    from . import google_drive
+
+    GOOGLE_DRIVE_AVAILABLE = True
+except ImportError:
+    GOOGLE_DRIVE_AVAILABLE = False
+
 URL = "https://www.vendus.co.ao/ws/documents/"
 SAFT_URL = "https://www.vendus.co.ao/ws/taxauthority/saft"
 
@@ -392,7 +400,9 @@ def tax_analysis(api_key: str, year: int, month: int) -> TaxReport:
     return TaxReport(lines)
 
 
-def run_saft(year_month: str, output: Optional[str], output_dir: Optional[str] = None):
+def run_saft(
+    year_month: str, output: Optional[str], output_dir: Optional[str] = None
+) -> str:
     """
     Execute SAFT report generation command.
 
@@ -400,6 +410,9 @@ def run_saft(year_month: str, output: Optional[str], output_dir: Optional[str] =
         year_month: Year and month in YYYY-MM format
         output: Optional output file path
         output_dir: Optional output directory path
+
+    Returns:
+        Path to the generated file
     """
     api_key = os.getenv("VENDUS_API_KEY")
     if not api_key:
@@ -437,6 +450,7 @@ def run_saft(year_month: str, output: Optional[str], output_dir: Optional[str] =
             f.write(xml_content)
 
         print(f"SAFT report saved to: {filename}")
+        return os.path.abspath(filename)
 
     except Exception as e:
         print(f"Error: {e}")
@@ -445,7 +459,7 @@ def run_saft(year_month: str, output: Optional[str], output_dir: Optional[str] =
 
 def run_tax_analysis(
     year_month: str, output: Optional[str], output_dir: Optional[str] = None
-):
+) -> str:
     """
     Execute tax analysis report generation command.
 
@@ -453,6 +467,9 @@ def run_tax_analysis(
         year_month: Year and month in YYYY-MM format
         output: Optional output file path
         output_dir: Optional output directory path
+
+    Returns:
+        Path to the generated file
     """
     api_key = os.getenv("VENDUS_API_KEY")
     if not api_key:
@@ -494,6 +511,7 @@ def run_tax_analysis(
             f.write(content)
 
         print(f"Tax analysis report saved to: {filename}")
+        return os.path.abspath(filename)
 
     except Exception as e:
         print(f"Error: {e}")
@@ -505,7 +523,7 @@ def run_receipts(
     to_date: str,
     output: Optional[str],
     output_dir: Optional[str] = None,
-):
+) -> str:
     """
     Execute receipts report generation command.
 
@@ -514,6 +532,9 @@ def run_receipts(
         to_date: End date in YYYY-MM-DD format
         output: Optional output file path
         output_dir: Optional output directory path
+
+    Returns:
+        Path to the generated file
     """
     api_key = os.getenv("VENDUS_API_KEY")
     if not api_key:
@@ -541,6 +562,7 @@ def run_receipts(
             f.write(content)
 
         print(f"Receipts report saved to: {filename}")
+        return os.path.abspath(filename)
 
     except Exception as e:
         print(f"Error: {e}")
@@ -552,7 +574,7 @@ def run_invoicing(
     to_date: str,
     output: Optional[str],
     output_dir: Optional[str] = None,
-):
+) -> str:
     """
     Execute invoicing report generation command.
 
@@ -561,6 +583,9 @@ def run_invoicing(
         to_date: End date in YYYY-MM-DD format
         output: Optional output file path
         output_dir: Optional output directory path
+
+    Returns:
+        Path to the generated file
     """
     api_key = os.getenv("VENDUS_API_KEY")
     if not api_key:
@@ -588,19 +613,25 @@ def run_invoicing(
             f.write(content)
 
         print(f"Invoicing report saved to: {filename}")
+        return os.path.abspath(filename)
 
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
 
 
-def run_all(year_month: Optional[str], output_dir: Optional[str]):
+def run_all(
+    year_month: Optional[str], output_dir: Optional[str]
+) -> tuple[str, List[str]]:
     """
     Execute all report generation commands for a given month.
 
     Args:
         year_month: Optional year and month in YYYY-MM format. If not provided, uses previous month.
         output_dir: Optional output directory path
+
+    Returns:
+        Tuple of (year_month, list of generated file paths)
     """
     # Determine the target month
     if year_month:
@@ -637,24 +668,94 @@ def run_all(year_month: Optional[str], output_dir: Optional[str]):
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
 
-    # Run all reports
+    # Run all reports and collect file paths
+    generated_files = []
     try:
         print("Generating invoicing report...")
-        run_invoicing(first_day, last_day, None, output_dir)
+        file_path = run_invoicing(first_day, last_day, None, output_dir)
+        generated_files.append(file_path)
 
         print("Generating receipts report...")
-        run_receipts(first_day, last_day, None, output_dir)
+        file_path = run_receipts(first_day, last_day, None, output_dir)
+        generated_files.append(file_path)
 
         print("Generating SAFT report...")
-        run_saft(year_month, None, output_dir)
+        file_path = run_saft(year_month, None, output_dir)
+        generated_files.append(file_path)
 
         print("Generating tax analysis report...")
-        run_tax_analysis(year_month, None, output_dir)
+        file_path = run_tax_analysis(year_month, None, output_dir)
+        generated_files.append(file_path)
 
         print("\nAll reports generated successfully!")
+        return year_month, generated_files
 
     except Exception as e:
         print(f"Error generating reports: {e}")
+        sys.exit(1)
+
+
+def archive_to_drive(files: List[str], year_month: str):
+    """
+    Archive files to Google Drive.
+
+    Args:
+        files: List of file paths to upload
+        year_month: Year and month in YYYY-MM format (e.g., "2024-01")
+    """
+    if not GOOGLE_DRIVE_AVAILABLE:
+        print(
+            "Error: Google Drive integration is not available. Install required packages:"
+        )
+        print("  uv pip install google-auth google-api-python-client")
+        sys.exit(1)
+
+    # Validate environment variables
+    required_vars = {
+        "SERVICE_ACCOUNT_KEY_PATH": google_drive.SERVICE_ACCOUNT_KEY_PATH,
+        "ROOT_FOLDER_ID": google_drive.ROOT_FOLDER_ID,
+        "IMPERSONATED_EMAIL": google_drive.IMPERSONATED_EMAIL,
+    }
+
+    missing_vars = [var for var, value in required_vars.items() if not value]
+    if missing_vars:
+        print(
+            f"Error: Missing required environment variables for Google Drive archive:"
+        )
+        for var in missing_vars:
+            print(f"  - {var}")
+        sys.exit(1)
+
+    try:
+        print("\nArchiving files to Google Drive...")
+
+        # Create Drive service
+        service = google_drive.create_drive_service()
+
+        # Parse year-month
+        year = year_month.split("-")[0]
+
+        # Create folder structure: [root]/[yyyy]/[yyyy-mm]
+        folder_id = google_drive.create_folder_path(
+            service, [year, year_month], google_drive.ROOT_FOLDER_ID
+        )
+
+        print(f"Target folder: {year}/{year_month}")
+
+        # Upload each file
+        for file_path in files:
+            if os.path.exists(file_path):
+                file_name = os.path.basename(file_path)
+                print(f"  Uploading {file_name}...")
+                google_drive.upload_file_to_drive(service, file_path, folder_id)
+                print(f"  ✓ {file_name} uploaded successfully")
+            else:
+                print(f"  ✗ File not found: {file_path}")
+
+        print("\n✓ All files archived to Google Drive successfully!")
+
+    except Exception as e:
+        print(f"\nError archiving to Google Drive: {e}")
         sys.exit(1)
 
 
@@ -675,6 +776,12 @@ def main():
         "-o",
         metavar="DIR",
         help="Output directory for generated reports (applies to all commands)",
+    )
+
+    parser.add_argument(
+        "--archive",
+        action="store_true",
+        help="Archive generated files to Google Drive (requires SERVICE_ACCOUNT_KEY_PATH, ROOT_FOLDER_ID, and IMPERSONATED_EMAIL env vars)",
     )
 
     subparsers = parser.add_subparsers(
@@ -765,16 +872,33 @@ def main():
     # Extract command-specific output (if provided)
     cmd_output = getattr(args, "output", None) if args.command != "all" else None
 
+    # Track files for archiving
+    files_to_archive = []
+    archive_year_month = None
+
     if args.command == "all":
-        run_all(args.month, output_dir)
+        archive_year_month, files_to_archive = run_all(args.month, output_dir)
     elif args.command == "facturas":
-        run_invoicing(args.from_date, args.to_date, cmd_output, output_dir)
+        file_path = run_invoicing(args.from_date, args.to_date, cmd_output, output_dir)
+        files_to_archive.append(file_path)
+        # Extract year-month from date for archiving
+        archive_year_month = args.from_date[:7]  # Get YYYY-MM from YYYY-MM-DD
     elif args.command == "recibos":
-        run_receipts(args.from_date, args.to_date, cmd_output, output_dir)
+        file_path = run_receipts(args.from_date, args.to_date, cmd_output, output_dir)
+        files_to_archive.append(file_path)
+        archive_year_month = args.from_date[:7]
     elif args.command == "saft":
-        run_saft(args.year_month, cmd_output, output_dir)
+        file_path = run_saft(args.year_month, cmd_output, output_dir)
+        files_to_archive.append(file_path)
+        archive_year_month = args.year_month
     elif args.command == "impostos":
-        run_tax_analysis(args.year_month, cmd_output, output_dir)
+        file_path = run_tax_analysis(args.year_month, cmd_output, output_dir)
+        files_to_archive.append(file_path)
+        archive_year_month = args.year_month
+
+    # Handle archiving if --archive flag is set
+    if args.archive and files_to_archive and archive_year_month:
+        archive_to_drive(files_to_archive, archive_year_month)
 
 
 if __name__ == "__main__":

@@ -67,6 +67,8 @@ vendus-reports --version
 
 ## Configuration
 
+### Required Environment Variables
+
 Set your Vendus API key as an environment variable:
 
 ```bash
@@ -79,6 +81,24 @@ To make this permanent, add it to your shell configuration file (`~/.bashrc`, `~
 echo 'export VENDUS_API_KEY="your_api_key_here"' >> ~/.bashrc
 source ~/.bashrc
 ```
+
+### Optional: Google Drive Archive Configuration
+
+If you want to use the `--archive` option to automatically upload reports to Google Drive, set these environment variables:
+
+| Variable                   | Description                                  | Required for --archive |
+| -------------------------- | -------------------------------------------- | ---------------------- |
+| `SERVICE_ACCOUNT_KEY_PATH` | Path to Google service account JSON key      | Yes                    |
+| `ROOT_FOLDER_ID`           | Google Drive root folder ID for organization | Yes                    |
+| `IMPERSONATED_EMAIL`       | Email for domain-wide delegation             | Yes                    |
+
+```bash
+export SERVICE_ACCOUNT_KEY_PATH="/path/to/service-account-key.json"
+export ROOT_FOLDER_ID="your_google_drive_folder_id"
+export IMPERSONATED_EMAIL="user@yourdomain.com"
+```
+
+Files will be organized in Google Drive as: `[root folder]/[yyyy]/[yyyy-mm]/`
 
 ## Usage
 
@@ -97,6 +117,9 @@ vendus-reports all 2024-01
 
 # Generate all reports with custom output directory
 vendus-reports all 2024-01 -o /path/to/output/directory
+
+# Generate and archive to Google Drive
+vendus-reports --archive all 2024-01
 ```
 
 This command will generate:
@@ -167,6 +190,7 @@ vendus-reports impostos 2024-01
 - `--version`: Show program version and exit
 - `--help`, `-h`: Show help message and exit
 - `--output DIR`, `-o DIR`: Output directory for generated reports (applies to all commands)
+- `--archive`: Archive generated files to Google Drive (requires service account configuration)
 
 ### Command-Specific Options
 
@@ -191,7 +215,7 @@ vendus-reports --help
 vendus-reports COMMAND --help
 
 # All reports
-vendus-reports [--output DIR] all [YYYY-MM]
+vendus-reports [--output DIR] [--archive] all [YYYY-MM]
 
 # Individual commands with global output directory
 vendus-reports --output DIR facturas FROM_DATE TO_DATE
@@ -204,6 +228,11 @@ vendus-reports facturas FROM_DATE TO_DATE -o OUTPUT_FILE
 vendus-reports recibos FROM_DATE TO_DATE -o OUTPUT_FILE
 vendus-reports saft YYYY-MM -o OUTPUT_FILE
 vendus-reports impostos YYYY-MM -o OUTPUT_FILE
+
+# Archive to Google Drive
+vendus-reports --archive all 2024-01
+vendus-reports --archive facturas 2024-01-01 2024-01-31
+vendus-reports --archive saft 2024-01
 ```
 
 ## Examples
@@ -245,6 +274,35 @@ vendus-reports saft 2024-01 -o january_saft.xml
 vendus-reports all 2024-01  # January reports
 vendus-reports all 2024-02  # February reports
 vendus-reports all          # Previous month (automatic)
+```
+
+### Google Drive Archive Workflow
+
+```bash
+# Set up environment variables (one-time setup)
+export VENDUS_API_KEY="your_api_key"
+export SERVICE_ACCOUNT_KEY_PATH="/path/to/service-account.json"
+export ROOT_FOLDER_ID="your_drive_folder_id"
+export IMPERSONATED_EMAIL="user@yourdomain.com"
+
+# Generate and archive all reports for a month
+vendus-reports --archive all 2024-01
+
+# Generate locally first, then archive individual reports
+vendus-reports --output ./local-reports --archive all 2024-01
+
+# Archive individual reports
+vendus-reports --archive facturas 2024-01-01 2024-01-31
+vendus-reports --archive saft 2024-01
+
+# The files will be organized in Drive as:
+# [ROOT_FOLDER_ID]/
+#   └── 2024/
+#       └── 2024-01/
+#           ├── facturas-2024-01-01-2024-01-31.csv
+#           ├── recibos-2024-01-01-2024-01-31.csv
+#           ├── saft-2024-01.xml
+#           └── impostos-2024-01.csv
 ```
 
 ### More Examples
@@ -437,6 +495,14 @@ MIT License - see LICENSE file for details.
 For issues and questions, please open an issue on the GitHub repository.
 
 ## Changelog
+
+### Version 0.2.0 (TBD)
+
+- **New Feature**: Added `--archive` option to automatically upload reports to Google Drive
+- **Integration**: Google Drive API integration with service account authentication
+- **Feature**: Automatic folder structure creation in Google Drive: `[root]/[yyyy]/[yyyy-mm]/`
+- **Enhancement**: All run functions now return file paths for archiving support
+- **Dependency**: Added `google-auth` and `google-api-python-client` dependencies
 
 ### Version 0.1.0 (2025-11-03)
 
