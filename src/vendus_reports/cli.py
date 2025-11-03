@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import json
 import sys
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -13,6 +12,7 @@ import base64
 import pandas as pd
 import unicodedata
 import calendar
+from datetime import datetime
 
 URL = "https://www.vendus.co.ao/ws/documents/"
 SAFT_URL = "https://www.vendus.co.ao/ws/taxauthority/saft"
@@ -520,10 +520,75 @@ def run_invoicing(from_date: str, to_date: str, output: Optional[str]):
         sys.exit(1)
 
 
+def run_all(year_month: Optional[str], output_dir: Optional[str]):
+    """
+    Execute all report generation commands for a given month.
+
+    Args:
+        year_month: Optional year and month in YYYY-MM format. If not provided, uses previous month.
+        output_dir: Optional output directory path
+    """
+    # Determine the target month
+    if year_month:
+        try:
+            year, month = year_month.split('-')
+            year = int(year)
+            month = int(month)
+
+            if month < 1 or month > 12:
+                raise ValueError("Month must be between 1 and 12")
+
+        except ValueError:
+            print(f"Error: Invalid date format. Expected yyyy-mm, got: {year_month}")
+            sys.exit(1)
+    else:
+        # Use previous month
+        today = datetime.now()
+        if today.month == 1:
+            year = today.year - 1
+            month = 12
+        else:
+            year = today.year
+            month = today.month - 1
+        year_month = f"{year:04d}-{month:02d}"
+
+    # Calculate first and last day of the month
+    first_day = f"{year:04d}-{month:02d}-01"
+    last_day_num = calendar.monthrange(year, month)[1]
+    last_day = f"{year:04d}-{month:02d}-{last_day_num:02d}"
+
+    print(f"Generating all reports for {year_month} ({first_day} to {last_day})")
+
+    # Run all reports
+    try:
+        print("Generating invoicing report...")
+        run_invoicing(first_day, last_day, None if not output_dir else f"{output_dir}/facturas-{year_month}.csv")
+
+        print("Generating receipts report...")
+        run_receipts(first_day, last_day, None if not output_dir else f"{output_dir}/recibos-{year_month}.csv")
+
+        print("Generating SAFT report...")
+        run_saft(year_month, None if not output_dir else f"{output_dir}/saft-{year_month}.xml")
+
+        print("Generating tax analysis report...")
+        run_tax_analysis(year_month, None if not output_dir else f"{output_dir}/impostos-{year_month}.csv")
+
+        print("All reports generated successfully!")
+
+    except Exception as e:
+        print(f"Error generating reports: {e}")
+        sys.exit(1)
+
+
 def main():
     """Main entry point for the CLI application."""
-    parser = argparse.ArgumentParser(description='VS Reports - Generate invoicing and receipt reports')
+    parser = argparse.ArgumentParser(description='VS Reports - Generate invoicing, receipts, SAFT, and tax analysis reports')
     subparsers = parser.add_subparsers(dest='command', help='Type of report to generate')
+
+    # All reports command
+    all_parser = subparsers.add_parser('all', help='Generate all reports for a given month')
+    all_parser.add_argument('month', nargs='?', help='Year and month (YYYY-MM). If not provided, uses previous month.')
+    all_parser.add_argument('-o', '--output', help='Output directory path')
 
     # Facturas command
     facturas_parser = subparsers.add_parser('facturas', help='Generate invoicing report')
@@ -553,7 +618,9 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    if args.command == 'facturas':
+    if args.command == 'all':
+        run_all(args.month, args.output)
+    elif args.command == 'facturas':
         run_invoicing(args.from_date, args.to_date, args.output)
     elif args.command == 'recibos':
         run_receipts(args.from_date, args.to_date, args.output)

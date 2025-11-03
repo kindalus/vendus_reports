@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "vendus-reports"
-version = "1.0.0"
+version = "0.1.0"
 description = "A CLI tool to generate invoicing, receipts, SAFT, and tax analysis reports from Vendus API"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -50,11 +50,8 @@ Issues = "https://github.com/kindalus/vendus-reports/issues"
 [project.scripts]
 vendus-reports = "vendus_reports.cli:main"
 
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.package-dir]
-"" = "src"
+[tool.hatch.build.targets.wheel]
+packages = ["src/vendus_reports"]
 
 [tool.black]
 line-length = 88

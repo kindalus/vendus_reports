@@ -4,6 +4,7 @@ A Python CLI tool to generate invoicing, receipts, SAFT, and tax analysis report
 
 ## Features
 
+- **All Reports**: Generate all reports for a given month with a single command
 - **Facturas (Invoicing)**: Generate detailed invoice reports with VAT calculations
 - **Recibos (Receipts)**: Generate receipt reports with related document information
 - **SAFT**: Generate SAFT XML reports for tax authorities
@@ -35,7 +36,31 @@ export VENDUS_API_KEY="your_api_key_here"
 
 ## Usage
 
-The tool provides four main commands:
+The tool provides five main commands:
+
+### All Reports (Recommended)
+
+Generate all reports for a given month with a single command:
+
+```bash
+# Generate all reports for the previous month (automatic)
+vendus-reports all
+
+# Generate all reports for a specific month
+vendus-reports all 2024-01
+
+# Generate all reports with custom output directory
+vendus-reports all 2024-01 -o /path/to/output/directory
+```
+
+This command will generate:
+
+- `facturas-2024-01.csv` (invoicing report)
+- `recibos-2024-01.csv` (receipts report)
+- `saft-2024-01.xml` (SAFT XML report)
+- `impostos-2024-01.csv` (tax analysis report)
+
+**Date range**: Automatically calculates the first and last day of the specified month for date-range reports.
 
 ### Facturas (Invoicing Reports)
 
@@ -93,21 +118,50 @@ vendus-reports impostos 2024-01
 
 ### General Options
 
-- `-o, --output`: Specify custom output file path
+- `-o, --output`: Specify custom output file path (for individual commands) or output directory (for `all` command)
 - `--help`: Show help message
 
 ### Date Formats
 
+- **All command**: `YYYY-MM` format (optional, defaults to previous month)
 - **Date range commands** (facturas, recibos): `YYYY-MM-DD` format
 - **Monthly commands** (saft, impostos): `YYYY-MM` format
 
+### Command Syntax
+
+```bash
+# All reports
+vendus-reports all [YYYY-MM] [-o OUTPUT_DIR]
+
+# Individual commands
+vendus-reports facturas FROM_DATE TO_DATE [-o OUTPUT_FILE]
+vendus-reports recibos FROM_DATE TO_DATE [-o OUTPUT_FILE]
+vendus-reports saft YYYY-MM [-o OUTPUT_FILE]
+vendus-reports impostos YYYY-MM [-o OUTPUT_FILE]
+```
+
 ## Examples
+
+### Quick Start - Generate All Reports
 
 ```bash
 # Set API key
 export VENDUS_API_KEY="abc123xyz789"
 
+# Generate all reports for previous month
+vendus-reports all
+
 # Generate all reports for January 2024
+vendus-reports all 2024-01
+
+# Generate all reports in a specific directory
+vendus-reports all 2024-01 -o /home/user/reports/january/
+```
+
+### Individual Commands
+
+```bash
+# Generate specific reports for January 2024
 vendus-reports facturas 2024-01-01 2024-01-31
 vendus-reports recibos 2024-01-01 2024-01-31
 vendus-reports saft 2024-01
@@ -118,9 +172,43 @@ vendus-reports facturas 2024-01-01 2024-01-31 -o january_invoices.csv
 vendus-reports saft 2024-01 -o january_saft.xml
 ```
 
+### Monthly Workflow
+
+```bash
+# Generate all reports for the current business cycle
+vendus-reports all 2024-01  # January reports
+vendus-reports all 2024-02  # February reports
+vendus-reports all          # Previous month (automatic)
+```
+
+### More Examples
+
+See the `examples/` directory for comprehensive usage examples and integration patterns:
+
+- `examples/generate_monthly_reports.py` - Interactive demonstration of all command features
+- `examples/README.md` - Additional usage patterns and batch processing examples
+
 ## Output Files
 
-When no output file is specified, the tool automatically generates filenames:
+### Using the `all` Command
+
+When using the `all` command, files are automatically named with the month:
+
+- Without output directory: Files created in current directory
+  - `facturas-2024-01.csv`
+  - `recibos-2024-01.csv`
+  - `saft-2024-01.xml`
+  - `impostos-2024-01.csv`
+
+- With output directory (`-o /path/to/dir/`): Files created in specified directory
+  - `/path/to/dir/facturas-2024-01.csv`
+  - `/path/to/dir/recibos-2024-01.csv`
+  - `/path/to/dir/saft-2024-01.xml`
+  - `/path/to/dir/impostos-2024-01.csv`
+
+### Using Individual Commands
+
+When no output file is specified, individual commands generate filenames automatically:
 
 - `facturas-2024-01-01-2024-01-31.csv`
 - `recibos-2024-01-01-2024-01-31.csv`
@@ -248,6 +336,25 @@ This tool requires access to the Vendus API with the following endpoints:
 - **Text**: Accents removed from observation fields
 - **Currency**: Formatted to 2 decimal places
 
+### Month Processing
+
+The `all` command intelligently handles month calculations:
+
+- **Previous Month**: If no month specified, automatically uses the previous month
+- **Year Boundaries**: Correctly handles December → January transitions
+- **Month Range**: Automatically calculates first and last day of the month for date-range reports
+- **Leap Years**: Uses Python's `calendar` module for accurate month-end dates
+
+## Error Handling
+
+The tool provides comprehensive error handling:
+
+- **API Key Validation**: Checks for required `VENDUS_API_KEY` environment variable
+- **Date Validation**: Validates date formats and ranges
+- **Month Validation**: Ensures months are between 1-12
+- **File System**: Handles file creation and directory permissions
+- **Network**: Graceful handling of API connection issues
+
 ## License
 
 MIT License - see LICENSE file for details.
@@ -255,3 +362,12 @@ MIT License - see LICENSE file for details.
 ## Support
 
 For issues and questions, please open an issue on the GitHub repository.
+
+## Changelog
+
+### Latest Version
+
+- **New Feature**: Added `all` command to generate all reports for a given month
+- **Enhancement**: Automatic previous month calculation when no month specified
+- **Enhancement**: Improved output directory handling for batch operations
+- **Enhancement**: Consistent file naming across all report types
