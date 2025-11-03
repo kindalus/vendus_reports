@@ -54,7 +54,7 @@ def create_folder_path(service, path_parts: list, root_folder_id: str) -> str:
     return parent_folder_id
 
 
-def create_or_get_folder(service, folder_name: str, parent_id: str = None) -> str:
+def create_or_get_folder(service, folder_name: str, parent_id: str) -> str:
     """
     Creates a folder if it doesn't exist or retrieves its ID if it already exists.
 
@@ -67,8 +67,7 @@ def create_or_get_folder(service, folder_name: str, parent_id: str = None) -> st
         The ID of the created or retrieved folder
     """
     query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'"
-    if parent_id:
-        query += f" and '{parent_id}' in parents"
+    query += f" and '{parent_id}' in parents"
 
     response = service.files().list(q=query, fields="files(id)").execute()
     folders = response.get("files", [])
@@ -116,46 +115,6 @@ def upload_file_to_drive(service, file_path: str, parent_folder_id: str):
 
     with open(file_path, "rb") as f:
         media = MediaIoBaseUpload(BytesIO(f.read()), mimetype=mime_type, resumable=True)
-
-    file = (
-        service.files()
-        .create(body=file_metadata, media_body=media, fields="id")
-        .execute()
-    )
-
-    return file.get("id")
-
-
-def upload_text_file_to_drive(
-    service, content: str, file_name: str, parent_folder_id: str
-):
-    """
-    Upload a text file to Google Drive.
-
-    Args:
-        service: The authenticated Google Drive API service object
-        content: The text content to upload
-        file_name: The name for the file
-        parent_folder_id: The ID of the parent folder
-
-    Returns:
-        The ID of the uploaded file
-    """
-    # Determine MIME type based on file extension
-    if file_name.endswith(".xml"):
-        mime_type = "application/xml"
-    elif file_name.endswith(".csv"):
-        mime_type = "text/csv"
-    else:
-        mime_type = "text/plain"
-
-    file_metadata = {
-        "name": file_name,
-        "parents": [parent_folder_id],
-    }
-
-    bytes_content = BytesIO(content.encode("utf-8"))
-    media = MediaIoBaseUpload(bytes_content, mimetype=mime_type, resumable=True)
 
     file = (
         service.files()

@@ -496,7 +496,7 @@ For issues and questions, please open an issue on the GitHub repository.
 
 ## Changelog
 
-### Version 0.2.0 (TBD)
+### Version 0.2.0 (2025-11-03)
 
 - **New Feature**: Added `--archive` option to automatically upload reports to Google Drive
 - **Integration**: Google Drive API integration with service account authentication
