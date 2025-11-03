@@ -12,7 +12,22 @@ A Python CLI tool to generate invoicing, receipts, SAFT, and tax analysis report
 
 ## Installation
 
-### From Source
+This project uses [uv](https://github.com/astral-sh/uv) for fast, reliable Python package management.
+
+### Using uv (Recommended)
+
+```bash
+# Install uv if you haven't already
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Clone and install the project
+git clone https://github.com/kindalus/vendus-reports
+cd vendus-reports
+uv sync
+uv pip install -e .
+```
+
+### Using pip
 
 ```bash
 git clone https://github.com/kindalus/vendus-reports
@@ -20,10 +35,34 @@ cd vendus-reports
 pip install -e .
 ```
 
-### Using pip (when published)
+### Using pip (when published to PyPI)
 
 ```bash
 pip install vendus-reports
+```
+
+## Quick Start
+
+```bash
+# Install uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Clone and install
+git clone https://github.com/kindalus/vendus-reports
+cd vendus-reports
+uv sync && uv pip install -e .
+
+# Set your API key
+export VENDUS_API_KEY="your_api_key_here"
+
+# Generate all reports for previous month
+vendus-reports all
+
+# Show help
+vendus-reports --help
+
+# Show version
+vendus-reports --version
 ```
 
 ## Configuration
@@ -32,6 +71,13 @@ Set your Vendus API key as an environment variable:
 
 ```bash
 export VENDUS_API_KEY="your_api_key_here"
+```
+
+To make this permanent, add it to your shell configuration file (`~/.bashrc`, `~/.zshrc`, etc.):
+
+```bash
+echo 'export VENDUS_API_KEY="your_api_key_here"' >> ~/.bashrc
+source ~/.bashrc
 ```
 
 ## Usage
@@ -118,8 +164,15 @@ vendus-reports impostos 2024-01
 
 ### General Options
 
-- `-o, --output`: Specify custom output file path (for individual commands) or output directory (for `all` command)
-- `--help`: Show help message
+- `--version`: Show program version and exit
+- `--help`, `-h`: Show help message and exit
+- `--output DIR`, `-o DIR`: Output directory for generated reports (applies to all commands)
+
+### Command-Specific Options
+
+Each subcommand (facturas, recibos, saft, impostos) supports:
+
+- `-o FILE`, `--output FILE`: Specify custom output file path (overrides global --output directory)
 
 ### Date Formats
 
@@ -130,14 +183,27 @@ vendus-reports impostos 2024-01
 ### Command Syntax
 
 ```bash
-# All reports
-vendus-reports all [YYYY-MM] [-o OUTPUT_DIR]
+# Show version
+vendus-reports --version
 
-# Individual commands
-vendus-reports facturas FROM_DATE TO_DATE [-o OUTPUT_FILE]
-vendus-reports recibos FROM_DATE TO_DATE [-o OUTPUT_FILE]
-vendus-reports saft YYYY-MM [-o OUTPUT_FILE]
-vendus-reports impostos YYYY-MM [-o OUTPUT_FILE]
+# Show help
+vendus-reports --help
+vendus-reports COMMAND --help
+
+# All reports
+vendus-reports [--output DIR] all [YYYY-MM]
+
+# Individual commands with global output directory
+vendus-reports --output DIR facturas FROM_DATE TO_DATE
+vendus-reports --output DIR recibos FROM_DATE TO_DATE
+vendus-reports --output DIR saft YYYY-MM
+vendus-reports --output DIR impostos YYYY-MM
+
+# Individual commands with specific output file
+vendus-reports facturas FROM_DATE TO_DATE -o OUTPUT_FILE
+vendus-reports recibos FROM_DATE TO_DATE -o OUTPUT_FILE
+vendus-reports saft YYYY-MM -o OUTPUT_FILE
+vendus-reports impostos YYYY-MM -o OUTPUT_FILE
 ```
 
 ## Examples
@@ -219,19 +285,26 @@ When no output file is specified, individual commands generate filenames automat
 
 ### Setup Development Environment
 
+This project uses `uv` for dependency management.
+
+```bash
+# Clone the repository
+git clone https://github.com/kindalus/vendus-reports
+cd vendus-reports
+
+# Install dependencies using uv
+uv sync
+
+# Install the package in editable mode with dev dependencies
+uv pip install -e ".[dev]"
+```
+
+### Alternative Development Setup (using pip)
+
 ```bash
 git clone https://github.com/kindalus/vendus-reports
 cd vendus-reports
 pip install -e .[dev]
-```
-
-### Alternative Development Setup
-
-If you prefer using requirements files:
-
-```bash
-pip install -e .
-pip install -r requirements-dev.txt
 ```
 
 ### Running Tests
@@ -365,9 +438,15 @@ For issues and questions, please open an issue on the GitHub repository.
 
 ## Changelog
 
-### Latest Version
+### Version 0.1.0 (2025-11-03)
 
-- **New Feature**: Added `all` command to generate all reports for a given month
-- **Enhancement**: Automatic previous month calculation when no month specified
-- **Enhancement**: Improved output directory handling for batch operations
-- **Enhancement**: Consistent file naming across all report types
+- **Project Structure**: Converted to uv-enabled project for faster, more reliable dependency management
+- **New Feature**: Added `--version` option to display version aligned with git tags
+- **Enhancement**: Added `--help` option with detailed command documentation
+- **Enhancement**: Added global `--output DIR` option for specifying output directory across all commands
+- **Enhancement**: Command-specific `-o FILE` option now overrides global output directory
+- **Enhancement**: Automatic directory creation for output paths
+- **Enhancement**: Improved console feedback with file save confirmations
+- **Feature**: `all` command to generate all reports for a given month
+- **Feature**: Automatic previous month calculation when no month specified
+- **Feature**: Consistent file naming across all report types
