@@ -7,6 +7,7 @@ This document summarizes the changes made to upgrade the project to version 0.1.
 ## Major Changes
 
 ### 1. UV-Enabled Project
+
 - Converted from setuptools to hatchling build backend
 - Added `uv.lock` for reproducible dependency management
 - Updated build configuration in `pyproject.toml`
@@ -15,42 +16,48 @@ This document summarizes the changes made to upgrade the project to version 0.1.
 ### 2. Enhanced CLI Options
 
 #### Global Options
+
 - `--version`: Display version number aligned with git tags
 - `--help` / `-h`: Show comprehensive help messages
 - `--output DIR` / `-o DIR`: Specify output directory for all reports
 
 #### Command-Specific Options
+
 - Each subcommand (facturas, recibos, saft, impostos) supports `-o FILE` to override the global output directory
 - Improved help text for all commands
 
 ### 3. Improved Functionality
+
 - Automatic directory creation for output paths
 - Console feedback when files are saved
 - Better error handling and user messages
 - Enhanced argument parsing with detailed descriptions
 
 ### 4. Git Tagging
+
 - Created v0.1.0 git tag for version tracking
 - Version in code (`__version__`) matches git tag
 
 ## Installation
 
 ### Using UV (Recommended)
+
 ```bash
 # Install uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone and install
-git clone https://github.com/kindalus/vendus-reports
-cd vendus-reports
+git clone https://github.com/kindalus/vendus_reports
+cd vendus_reports
 uv sync
 uv pip install -e .
 ```
 
 ### Using pip
+
 ```bash
-git clone https://github.com/kindalus/vendus-reports
-cd vendus-reports
+git clone https://github.com/kindalus/vendus_reports
+cd vendus_reports
 pip install -e .
 ```
 
@@ -108,6 +115,7 @@ If you were using the old version:
 ## Testing
 
 All new options have been tested:
+
 - ✅ `--version` displays correct version
 - ✅ `--help` shows comprehensive help
 - ✅ `--output DIR` works for all commands
@@ -118,6 +126,7 @@ All new options have been tested:
 ## Next Steps
 
 To push changes to remote:
+
 ```bash
 git push origin main
 git push origin v0.1.0

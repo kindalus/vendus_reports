@@ -21,8 +21,8 @@ This project uses [uv](https://github.com/astral-sh/uv) for fast, reliable Pytho
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone and install the project
-git clone https://github.com/kindalus/vendus-reports
-cd vendus-reports
+git clone https://github.com/kindalus/vendus_reports
+cd vendus_reports
 uv sync
 uv pip install -e .
 ```
@@ -30,8 +30,8 @@ uv pip install -e .
 ### Using pip
 
 ```bash
-git clone https://github.com/kindalus/vendus-reports
-cd vendus-reports
+git clone https://github.com/kindalus/vendus_reports
+cd vendus_reports
 pip install -e .
 ```
 
@@ -48,8 +48,8 @@ pip install vendus-reports
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone and install
-git clone https://github.com/kindalus/vendus-reports
-cd vendus-reports
+git clone https://github.com/kindalus/vendus_reports
+cd vendus_reports
 uv sync && uv pip install -e .
 
 # Set your API key
@@ -289,8 +289,8 @@ This project uses `uv` for dependency management.
 
 ```bash
 # Clone the repository
-git clone https://github.com/kindalus/vendus-reports
-cd vendus-reports
+git clone https://github.com/kindalus/vendus_reports
+cd vendus_reports
 
 # Install dependencies using uv
 uv sync
@@ -302,8 +302,8 @@ uv pip install -e ".[dev]"
 ### Alternative Development Setup (using pip)
 
 ```bash
-git clone https://github.com/kindalus/vendus-reports
-cd vendus-reports
+git clone https://github.com/kindalus/vendus_reports
+cd vendus_reports
 pip install -e .[dev]
 ```
 

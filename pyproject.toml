@@ -43,9 +43,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/kindalus/vendus-reports"
-Repository = "https://github.com/kindalus/vendus-reports"
-Issues = "https://github.com/kindalus/vendus-reports/issues"
+Homepage = "https://github.com/kindalus/vendus_reports"
+Repository = "https://github.com/kindalus/vendus_reports"
+Issues = "https://github.com/kindalus/vendus_reports/issues"
 
 [project.scripts]
 vendus-reports = "vendus_reports.cli:main"

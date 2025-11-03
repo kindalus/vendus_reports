@@ -663,7 +663,7 @@ def main():
     parser = argparse.ArgumentParser(
         prog="vendus-reports",
         description="Generate invoicing, receipts, SAFT, and tax analysis reports from Vendus API",
-        epilog="For more information, visit: https://github.com/kindalus/vendus-reports",
+        epilog="For more information, visit: https://github.com/kindalus/vendus_reports",
     )
 
     parser.add_argument(
