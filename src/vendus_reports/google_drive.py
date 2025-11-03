@@ -34,7 +34,7 @@ def create_drive_service():
     return build("drive", "v3", credentials=delegated_creds)
 
 
-def create_folder_path(service, path_parts: list, root_folder_id: str) -> str:
+def create_folder_path(service, path_parts: list[str], root_folder_id: str) -> str:
     """
     Creates a folder structure based on a list of folder names.
 
