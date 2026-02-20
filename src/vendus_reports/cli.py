@@ -24,8 +24,8 @@ try:
 except ImportError:
     GOOGLE_DRIVE_AVAILABLE = False
 
-URL = "https://www.vendus.co.ao/ws/documents/"
-SAFT_URL = "https://www.vendus.co.ao/ws/taxauthority/saft"
+URL = "https://www.vendus.co.ao/ws/v1.1/documents/"
+SAFT_URL = "https://www.vendus.co.ao/ws/v1.1/taxauthority/saft"
 
 
 @dataclass
@@ -197,7 +197,7 @@ def get_receipt(api_key: str, receipt_id: int) -> ReceiptRow:
     Returns:
         ReceiptRow with receipt details and related documents
     """
-    endpoint = f"{URL}/{receipt_id}/?api_key={api_key}"
+    endpoint = f"{URL}{receipt_id}/?api_key={api_key}"
 
     response = requests.get(endpoint)
     if response.status_code != 200:
@@ -542,7 +542,6 @@ def run_receipts(
         sys.exit(1)
     try:
         report = receipts(api_key, from_date, to_date)
-
         content = "DATA;NUMERO;CLIENTE;VALOR;OBS"
         for line in report.lines:
             content += f"\n{line}\n"
