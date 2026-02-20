@@ -14,7 +14,7 @@ import unicodedata
 import calendar
 from datetime import datetime
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 # Google Drive import (optional - only needed when --archive is used)
 try:
