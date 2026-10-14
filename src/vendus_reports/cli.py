@@ -14,7 +14,7 @@ import unicodedata
 import calendar
 from datetime import datetime
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 # Google Drive import (optional - only needed when --archive is used)
 try:
@@ -240,6 +240,13 @@ def receipts(api_key: str, from_date: str, to_date: str) -> ReceiptReport:
     endpoint = f"{URL}?api_key={api_key}&since={from_date}&until={to_date}&view=detailed&type=RG&per_page=1000"
 
     response = requests.get(endpoint)
+    if response.status_code == 404:
+        # Vendus uses A001/No data for an empty receipt listing.
+        data = response.json()
+        if isinstance(data, dict) and data.get("errors") == [
+            {"code": "A001", "message": "No data"}
+        ]:
+            return ReceiptReport([])
     if response.status_code != 200:
         raise Exception(f"Invalid status code: {response.status_code}")
 
