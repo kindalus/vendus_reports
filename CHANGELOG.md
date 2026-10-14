@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.3] - Unreleased
+## [0.2.3] - 2026-10-14
 
 ### Fixed
 - Months without receipts (Vendus HTTP 404 with `A001 / No data`) now produce a header-only receipts CSV instead of aborting monthly reports and Google Drive archiving. Other API failures remain fatal.
